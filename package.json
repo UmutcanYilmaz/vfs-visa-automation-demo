@@ -1,0 +1,9 @@
+{
+  "name": "vfs-visa-automation-demo",
+  "version": "1.0.0",
+  "private": true,
+  "scripts": {
+    "dev": "pnpm -r --parallel dev",
+    "bot:start": "pnpm --filter bot start"
+  }
+}

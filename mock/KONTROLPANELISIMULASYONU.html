@@ -1,0 +1,1244 @@
+<!DOCTYPE html>
+<html lang="tr">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>V8 Enterprise Vize Otomasyonu & B2C SaaS Yönetim Paneli</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Fira+Code:wght@400;500;700&family=Inter:wght@300;400;500;600;700;800;900&display=swap');
+
+        body {
+            font-family: 'Inter', sans-serif;
+        }
+
+        .code-font {
+            font-family: 'Fira Code', monospace;
+        }
+
+        /* Custom scrollbar */
+        ::-webkit-scrollbar {
+            width: 6px;
+            height: 6px;
+        }
+
+        拾::-webkit-scrollbar-track {
+            background: #0b1329;
+        }
+
+        ::-webkit-scrollbar-thumb {
+            background: #1e293b;
+            border-radius: 4px;
+        }
+
+        ::-webkit-scrollbar-thumb:hover {
+            background: #334155;
+        }
+
+        .glow-emerald {
+            box-shadow: 0 0 15px rgba(16, 185, 129, 0.15);
+        }
+
+        .glow-indigo {
+            box-shadow: 0 0 15px rgba(99, 102, 241, 0.15);
+        }
+    </style>
+</head>
+
+<body class="bg-[#030712] text-slate-100 min-h-screen flex flex-col selection:bg-emerald-500 selection:text-slate-900">
+
+    <header
+        class="bg-[#0b0f19] border-b border-slate-800/80 px-6 py-4 flex flex-col lg:flex-row items-center justify-between gap-4">
+        <div class="flex items-center space-x-3">
+            <div
+                class="p-2.5 bg-gradient-to-tr from-emerald-500/20 to-teal-500/10 text-emerald-400 rounded-xl border border-emerald-500/30 shadow-lg shadow-emerald-500/5">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24"
+                    stroke="currentColor" stroke-width="2.5">
+                    <path stroke-linecap="round" stroke-linejoin="round"
+                        d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10" />
+                </svg>
+            </div>
+            <div>
+                <h1 class="text-xl font-black text-slate-100 tracking-tight flex items-center gap-2">
+                    V8 Enterprise SaaS Controller <span
+                        class="text-[10px] tracking-widest uppercase bg-emerald-500/20 text-emerald-400 border border-emerald-500/30 px-2 py-0.5 rounded-md font-bold">Multi-Tenant
+                        v8.4</span>
+                </h1>
+                <p class="text-xs text-slate-400 font-medium">B2C Ölçeğinde Dağıtık, Kendi Kendini Onaran (Self-Healing)
+                    Otomasyon Altyapısı</p>
+            </div>
+        </div>
+        <div class="flex flex-wrap items-center gap-3">
+            <div
+                class="flex items-center space-x-2 text-xs bg-[#111827] px-3.5 py-2 rounded-xl border border-slate-800">
+                <span class="relative flex h-2 w-2">
+                    <span
+                        class="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
+                    <span class="relative inline-flex rounded-full h-2 w-2 bg-emerald-500"></span>
+                </span>
+                <span>Shadow-Ban Doğrulayıcı: <strong class="text-emerald-400" id="shadow-validator-status">Aktif (%0
+                        Blokaj)</strong></span>
+            </div>
+            <div class="text-xs bg-[#111827] px-3.5 py-2 rounded-xl border border-slate-800 text-slate-400">
+                Aktif Cluster: <span class="text-indigo-400 font-bold" id="active-node-count">Hetzner-Cluster (46/46
+                    Node)</span>
+            </div>
+        </div>
+    </header>
+
+    <div class="flex-1 flex flex-col md:flex-row overflow-hidden">
+        <aside class="w-full md:w-64 bg-[#0b0f19] border-r border-slate-800/80 flex flex-col py-4">
+            <nav class="flex-1 px-3 space-y-1">
+                <button onclick="switchTab('dashboard')" id="btn-dashboard"
+                    class="nav-btn w-full flex items-center space-x-3 px-4 py-3 rounded-xl text-sm font-semibold transition bg-emerald-500/10 text-emerald-400 border-l-4 border-emerald-500 shadow-md">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24"
+                        stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                            d="M4 6a2 2 0 012-2h2a2 2 0 012 2v4a2 2 0 01-2 2H6a2 2 0 01-2-2V6zM14 6a2 2 0 012-2h2a2 2 0 012 2v4a2 2 0 01-2 2h-2a2 2 0 01-2-2V6zM4 16a2 2 0 012-2h2a2 2 0 012 2v4a2 2 0 01-2 2H6a2 2 0 01-2-2v-4zM14 16a2 2 0 012-2h2a2 2 0 012 2v4a2 2 0 01-2 2h-2a2 2 0 01-2-2v-4z" />
+                    </svg>
+                    <span>İzleme Paneli</span>
+                </button>
+                <button onclick="switchTab('tenants')" id="btn-tenants"
+                    class="nav-btn w-full flex items-center space-x-3 px-4 py-3 rounded-xl text-sm font-semibold text-slate-400 hover:bg-slate-800/40 hover:text-slate-200 transition">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24"
+                        stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                            d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a3 3 0 11-6 0 3 3 0 016 0z" />
+                    </svg>
+                    <span>SaaS Müşteri Havuzu</span>
+                </button>
+                <button onclick="switchTab('settings')" id="btn-settings"
+                    class="nav-btn w-full flex items-center space-x-3 px-4 py-3 rounded-xl text-sm font-semibold text-slate-400 hover:bg-slate-800/40 hover:text-slate-200 transition">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24"
+                        stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                            d="M12 6V4m0 2a2 2 0 100 4m0-4a2 2 0 110 4m-6 8a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4m6 6v10m6-2a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4" />
+                    </svg>
+                    <span>SaaS Havuz Ayarları</span>
+                </button>
+                <button onclick="switchTab('n8n')" id="btn-n8n"
+                    class="nav-btn w-full flex items-center space-x-3 px-4 py-3 rounded-xl text-sm font-semibold text-slate-400 hover:bg-slate-800/40 hover:text-slate-200 transition">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24"
+                        stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                            d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10" />
+                    </svg>
+                    <span>n8n Dağıtık Akışlar</span>
+                </button>
+                <button onclick="switchTab('debugger')" id="btn-debugger"
+                    class="nav-btn w-full flex items-center space-x-3 px-4 py-3 rounded-xl text-sm font-semibold text-slate-400 hover:bg-slate-800/40 hover:text-slate-200 transition">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24"
+                        stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                            d="M12 18h.01M8 21h8a2 2 0 002-2V5a2 2 0 00-2-2H8a2 2 0 00-2 2v14a2 2 0 002 2z" />
+                    </svg>
+                    <span>Gelişmiş Hata Ayıklama</span>
+                </button>
+                <button onclick="switchTab('compliance')" id="btn-compliance"
+                    class="nav-btn w-full flex items-center space-x-3 px-4 py-3 rounded-xl text-sm font-semibold text-slate-400 hover:bg-slate-800/40 hover:text-slate-200 transition">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24"
+                        stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                            d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" />
+                    </svg>
+                    <span>KVKK / GDPR Güvenliği</span>
+                </button>
+            </nav>
+            <div class="px-4 py-3 border-t border-slate-800/80 text-xs text-slate-500">
+                <p>Enterprise V8 Platform</p>
+                <p class="mt-1 text-emerald-500/80 font-semibold">© 2026 Otonom Kontrol Paneli</p>
+            </div>
+        </aside>
+
+        <main class="flex-1 overflow-y-auto p-6 bg-[#030712] space-y-6">
+
+            <div id="tab-dashboard" class="space-y-6">
+
+                <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+                    <div
+                        class="bg-[#0b0f19] border border-slate-800 rounded-2xl p-5 flex items-center space-x-4 hover:border-slate-700/60 transition shadow-lg glow-emerald">
+                        <div class="p-3.5 bg-emerald-500/10 text-emerald-400 rounded-xl border border-emerald-500/20">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24"
+                                stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                    d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2" />
+                            </svg>
+                        </div>
+                        <div>
+                            <p class="text-xs text-slate-400 font-semibold tracking-wider uppercase">Dengelenmiş Polling
+                            </p>
+                            <h3 class="text-2xl font-black text-slate-50" id="metric-polling">892,105</h3>
+                        </div>
+                    </div>
+                    <div
+                        class="bg-[#0b0f19] border border-slate-800 rounded-2xl p-5 flex items-center space-x-4 hover:border-slate-700/60 transition shadow-lg">
+                        <div class="p-3.5 bg-blue-500/10 text-blue-400 rounded-xl border border-blue-500/20">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24"
+                                stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                    d="M12 11c0 3.517-1.009 6.799-2.753 9.571m-3.44-2.04l.054-.09A13.916 13.916 0 009 11V4.701" />
+                            </svg>
+                        </div>
+                        <div>
+                            <p class="text-xs text-slate-400 font-semibold tracking-wider uppercase">IP ve BIN Rotasyon
+                                Oranı</p>
+                            <h3 class="text-2xl font-black text-slate-50">%100 Stabil</h3>
+                        </div>
+                    </div>
+                    <div
+                        class="bg-[#0b0f19] border border-slate-800 rounded-2xl p-5 flex items-center space-x-4 hover:border-slate-700/60 transition shadow-lg">
+                        <div class="p-3.5 bg-indigo-500/10 text-indigo-400 rounded-xl border border-indigo-500/20">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24"
+                                stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                    d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z" />
+                            </svg>
+                        </div>
+                        <div>
+                            <p class="text-xs text-slate-400 font-semibold tracking-wider uppercase">Aktif SaaS Abonesi
+                            </p>
+                            <h3 class="text-2xl font-black text-slate-50" id="metric-subscribers">1,420</h3>
+                        </div>
+                    </div>
+                    <div
+                        class="bg-[#0b0f19] border border-slate-800 rounded-2xl p-5 flex items-center space-x-4 hover:border-slate-700/60 transition shadow-lg">
+                        <div class="p-3.5 bg-amber-500/10 text-amber-400 rounded-xl border border-amber-500/20">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24"
+                                stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                    d="M9 12l2 2 4-4M7.835 4.697a3.42 3.42 0 001.946-.806 3.42 3.42 0 014.438 0 3.42 3.42 0 001.946.806 3.42 3.42 0 013.138 3.138 3.42 3.42 0 00.806 1.946 3.42 3.42 0 010 4.438 3.42 3.42 0 00-.806 1.946 3.42 3.42 0 01-3.138 3.138z" />
+                            </svg>
+                        </div>
+                        <div>
+                            <p class="text-xs text-slate-400 font-semibold tracking-wider uppercase">Kazanılan Net Slot
+                            </p>
+                            <h3 class="text-2xl font-black text-slate-50" id="metric-slots">3,892</h3>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+
+                    <div class="lg:col-span-1 space-y-6">
+
+                        <div
+                            class="bg-[#0b0f19] border border-slate-800 rounded-2xl p-6 shadow-xl flex flex-col justify-between">
+                            <div>
+                                <h2 class="text-sm font-bold text-slate-100 mb-3 flex items-center gap-2">
+                                    <span class="w-2.5 h-2.5 bg-emerald-500 rounded-full"></span>
+                                    V8 SaaS Dağıtık Simülatör
+                                </h2>
+                                <p class="text-xs text-slate-400 mb-5 leading-relaxed">Binlerce paralel abonenin
+                                    randevusunu siber güvenlik kalkanlarına takılmadan otonom tarayan B2C SaaS döngüsünü
+                                    tetikleyin.</p>
+
+                                <div class="bg-slate-950 p-4 rounded-xl border border-slate-900 space-y-2.5 mb-5">
+                                    <div class="flex justify-between text-xs">
+                                        <span class="text-slate-500">Kuyruk Modeli:</span>
+                                        <span class="text-indigo-400 font-bold">Round-Robin (Adil Dağıtım)</span>
+                                    </div>
+                                    <div class="flex justify-between text-xs">
+                                        <span class="text-slate-500">Hedef Gatewayler:</span>
+                                        <span class="text-slate-300 font-semibold">VFS, iDATA, BLS, TLSContact</span>
+                                    </div>
+                                    <div class="flex justify-between text-xs">
+                                        <span class="text-slate-500">Aktif Kart BIN:</span>
+                                        <span class="text-amber-400 font-semibold font-mono" id="live-bin-status">PARAM
+                                            TROY (542839)</span>
+                                    </div>
+                                    <div class="flex justify-between text-xs">
+                                        <span class="text-slate-500">Kendi Kendini Onarma:</span>
+                                        <span class="text-emerald-400 font-medium">Çevrimdışı AI DB Aktif</span>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="space-y-3">
+                                <button onclick="startSaaSSimulation()" id="btn-start-sim"
+                                    class="w-full bg-emerald-600 hover:bg-emerald-500 text-slate-950 font-bold py-3 px-4 rounded-xl transition duration-200 flex items-center justify-center space-x-2 shadow-lg shadow-emerald-500/10">
+                                    <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none"
+                                        viewBox="0 0 24 24" stroke="currentColor">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5"
+                                            d="M14.752 11.168l-3.197-2.132A1 1 0 0010 9.87v4.263a1 1 0 001.555.832l3.197-2.132a1 1 0 000-1.664z" />
+                                    </svg>
+                                    <span>SaaS Paralel Polling Başlat</span>
+                                </button>
+                                <button onclick="stopSaaSSimulation()" id="btn-stop-sim"
+                                    class="w-full bg-slate-800 hover:bg-slate-700 text-slate-300 font-bold py-3 px-4 rounded-xl transition duration-200 flex items-center justify-center space-x-2 hidden">
+                                    <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none"
+                                        viewBox="0 0 24 24" stroke="currentColor">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5"
+                                            d="M18.364 18.364A9 9 0 005.636 5.636m12.728 12.728A9 9 0 015.636 5.636m12.728 12.728L5.636 5.636" />
+                                    </svg>
+                                    <span>Paralel Polling Durdur</span>
+                                </button>
+
+                                <div class="bg-slate-950/60 p-3 rounded-xl border border-slate-800 space-y-2">
+                                    <div
+                                        class="text-[10px] text-slate-400 font-bold uppercase tracking-wider mb-1 px-1">
+                                        Otonom Senaryo Testleri</div>
+                                    <div class="grid grid-cols-2 gap-2 text-[10px]">
+                                        <button onclick="simulateShadowBanRescue()"
+                                            class="bg-[#111827] hover:bg-slate-800 border border-slate-800 text-amber-400 py-2.5 rounded-lg transition font-semibold">
+                                            ⚠️ Gölge Engeli Aş
+                                        </button>
+                                        <button onclick="simulateOfflineHealing()"
+                                            class="bg-[#111827] hover:bg-slate-800 border border-slate-800 text-blue-400 py-2.5 rounded-lg transition font-semibold">
+                                            ⚡ Çevrimdışı AI Onar
+                                        </button>
+                                        <button onclick="simulateSelfieBypass()"
+                                            class="bg-[#111827] hover:bg-slate-800 border border-slate-800 text-rose-400 py-2.5 rounded-lg transition font-semibold">
+                                            📷 Selfie Bypass Test
+                                        </button>
+                                        <button onclick="simulateBinRotation()"
+                                            class="bg-[#111827] hover:bg-slate-800 border border-slate-800 text-teal-400 py-2.5 rounded-lg transition font-semibold">
+                                            💳 BIN Rotasyonu Test
+                                        </button>
+                                    </div>
+                                    <button onclick="simulateTrafficShaper()"
+                                        class="w-full bg-[#111827] hover:bg-slate-800 border border-slate-800 text-indigo-400 py-2 text-[10px] rounded-lg transition font-semibold">
+                                        📊 Gaussian Trafik Düzenleyici Çalıştır
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="bg-[#0b0f19] border border-slate-800 rounded-2xl p-5 shadow-xl">
+                            <h3
+                                class="text-xs font-bold text-slate-400 tracking-wider uppercase mb-3 flex items-center justify-between">
+                                <span>GÖLGE ENGEL (SHADOW-BAN) DENETLEYİCİ</span>
+                                <span class="text-emerald-400 text-[10px] animate-pulse">CANLI VERİ</span>
+                            </h3>
+                            <div class="space-y-3 text-xs">
+                                <div
+                                    class="flex items-center justify-between p-2.5 bg-slate-950 rounded-lg border border-slate-900">
+                                    <span class="text-slate-400">Çekirdek Çalışma Grubu Sonucu:</span>
+                                    <span class="text-slate-200 font-bold" id="status-workers">Arama Stabil (Veri
+                                        Aktif)</span>
+                                </div>
+                                <div
+                                    class="flex items-center justify-between p-2.5 bg-slate-950 rounded-lg border border-slate-900">
+                                    <span class="text-slate-400">Doğrulayıcı (Validator) Bot Sonucu:</span>
+                                    <span class="text-slate-200 font-bold" id="status-validators">Arama Stabil
+                                        (Doğrulandı)</span>
+                                </div>
+                                <div
+                                    class="flex items-center justify-between p-2.5 bg-slate-950 rounded-lg border border-slate-900">
+                                    <span class="text-slate-400">Durum Derecesi:</span>
+                                    <span class="text-emerald-400 font-extrabold" id="status-ban-ratio">%0 Tutarsızlık
+                                        (Güvenli)</span>
+                                </div>
+                            </div>
+                        </div>
+
+                    </div>
+
+                    <div
+                        class="lg:col-span-2 bg-[#0b0f19] border border-slate-800 rounded-2xl p-6 shadow-xl flex flex-col justify-between">
+                        <div>
+                            <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-2 mb-4">
+                                <div>
+                                    <h2 class="text-sm font-bold text-slate-100">Adil Dağıtımlı (Fair-Queueing)
+                                        Eşzamanlı Havuz</h2>
+                                    <p class="text-xs text-slate-400">Her abonenin talebi, alt havuzlarda izole şekilde
+                                        round-robin sırasıyla ve Gaussian zaman dalgalanmasıyla yürütülür.</p>
+                                </div>
+                                <span
+                                    class="text-[10px] bg-slate-950 text-indigo-400 border border-indigo-500/20 px-2.5 py-1 rounded-full font-bold">Gaussian
+                                    Dağılım: ±1.5s</span>
+                            </div>
+
+                            <div class="space-y-3.5">
+                                <div class="bg-slate-950 p-4 rounded-xl border border-slate-900 flex flex-col sm:flex-row sm:items-center justify-between gap-3 transition hover:border-slate-800"
+                                    id="queue-tenant-1">
+                                    <div class="flex items-center space-x-3">
+                                        <div
+                                            class="w-8 h-8 rounded-lg bg-indigo-500/10 border border-indigo-500/20 flex items-center justify-center text-xs font-bold text-indigo-400">
+                                            U1</div>
+                                        <div>
+                                            <h4 class="text-xs font-bold text-slate-200">Kullanıcı #8210 (Almanya
+                                                Vizesi)</h4>
+                                            <p class="text-[10px] text-slate-500">Istanbul Gayrettepe - iDATA Ön Kayıt
+                                            </p>
+                                        </div>
+                                    </div>
+                                    <div class="flex items-center space-x-3 text-right">
+                                        <div class="text-[10px]">
+                                            <div class="text-slate-400 font-semibold">Tünel Portu: <span
+                                                    class="text-slate-300 font-mono">1982</span></div>
+                                            <div class="text-slate-500" id="tenant-1-delay">Gecikme: 10.4sn (Gaussian)
+                                            </div>
+                                        </div>
+                                        <span
+                                            class="text-[10px] bg-emerald-500/15 text-emerald-400 border border-emerald-500/20 px-2.5 py-0.5 rounded-full font-semibold"
+                                            id="tenant-1-status">Sorguluyor</span>
+                                    </div>
+                                </div>
+
+                                <div class="bg-slate-950 p-4 rounded-xl border border-slate-900 flex flex-col sm:flex-row sm:items-center justify-between gap-3 transition hover:border-slate-800"
+                                    id="queue-tenant-2">
+                                    <div class="flex items-center space-x-3">
+                                        <div
+                                            class="w-8 h-8 rounded-lg bg-indigo-500/10 border border-indigo-500/20 flex items-center justify-center text-xs font-bold text-indigo-400">
+                                            U2</div>
+                                        <div>
+                                            <h4 class="text-xs font-bold text-slate-200">Kullanıcı #8211 (Fransa Vizesi)
+                                            </h4>
+                                            <p class="text-[10px] text-slate-500">Ankara - TLSContact</p>
+                                        </div>
+                                    </div>
+                                    <div class="flex items-center space-x-3 text-right">
+                                        <div class="text-[10px]">
+                                            <div class="text-slate-400 font-semibold">Tünel Portu: <span
+                                                    class="text-slate-300 font-mono">1983</span></div>
+                                            <div class="text-slate-500" id="tenant-2-delay">Gecikme: 9.8sn (Gaussian)
+                                            </div>
+                                        </div>
+                                        <span
+                                            class="text-[10px] bg-slate-800 text-slate-400 border border-slate-700/60 px-2.5 py-0.5 rounded-full font-semibold"
+                                            id="tenant-2-status">Kuyrukta</span>
+                                    </div>
+                                </div>
+
+                                <div class="bg-slate-950 p-4 rounded-xl border border-slate-900 flex flex-col sm:flex-row sm:items-center justify-between gap-3 transition hover:border-slate-800"
+                                    id="queue-tenant-3">
+                                    <div class="flex items-center space-x-3">
+                                        <div
+                                            class="w-8 h-8 rounded-lg bg-indigo-500/10 border border-indigo-500/20 flex items-center justify-center text-xs font-bold text-indigo-400">
+                                            U3</div>
+                                        <div>
+                                            <h4 class="text-xs font-bold text-slate-200">Kullanıcı #8212 (İspanya
+                                                Vizesi)</h4>
+                                            <p class="text-[10px] text-slate-500">Izmir - BLS International</p>
+                                        </div>
+                                    </div>
+                                    <div class="flex items-center space-x-3 text-right">
+                                        <div class="text-[10px]">
+                                            <div class="text-slate-400 font-semibold">Tünel Portu: <span
+                                                    class="text-slate-300 font-mono">1984</span></div>
+                                            <div class="text-slate-500" id="tenant-3-delay">Gecikme: 11.2sn (Gaussian)
+                                            </div>
+                                        </div>
+                                        <span
+                                            class="text-[10px] bg-slate-800 text-slate-400 border border-slate-700/60 px-2.5 py-0.5 rounded-full font-semibold"
+                                            id="tenant-3-status">Kuyrukta</span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div
+                            class="mt-6 border-t border-slate-800/80 pt-4 flex flex-col sm:flex-row justify-between items-center text-xs text-slate-400 space-y-2 sm:space-y-0">
+                            <span id="current-action-txt" class="flex items-center gap-2">
+                                <span class="w-2 h-2 rounded-full bg-slate-500" id="current-action-led"></span>
+                                <span id="current-action-lbl">SaaS Dağıtık Polling başlatılmaya hazır.</span>
+                            </span>
+                            <div
+                                class="w-full sm:w-1/2 bg-slate-950 h-2.5 rounded-full overflow-hidden border border-slate-800">
+                                <div id="pipeline-progress-bar"
+                                    class="bg-gradient-to-r from-emerald-500 to-teal-400 h-full w-0 transition-all duration-300">
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="bg-[#0b0f19] border border-slate-800 rounded-2xl p-6 shadow-xl">
+                    <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-4 gap-2">
+                        <div>
+                            <h3 class="text-sm font-bold text-slate-100">Hetzner Dedicated Sunucu Kümesi İzleme Haritası
+                                (46 Node)</h3>
+                            <p class="text-xs text-slate-400">Her bir bağımsız container (worker node) durumu, anlık CPU
+                                yükü ve proxy gecikme seviyeleri.</p>
+                        </div>
+                        <div class="flex items-center gap-3 text-xs">
+                            <span class="flex items-center gap-1.5"><span
+                                    class="w-2.5 h-2.5 bg-emerald-500 rounded-sm"></span> Boşta/Taramada</span>
+                            <span class="flex items-center gap-1.5"><span
+                                    class="w-2.5 h-2.5 bg-blue-500 rounded-sm"></span> İşlemde/CAPTCHA</span>
+                            <span class="flex items-center gap-1.5"><span
+                                    class="w-2.5 h-2.5 bg-amber-500 rounded-sm animate-pulse"></span> Yoğun</span>
+                        </div>
+                    </div>
+                    <div class="grid grid-cols-6 sm:grid-cols-10 md:grid-cols-12 lg:grid-cols-23 gap-2"
+                        id="cluster-node-grid">
+                    </div>
+                </div>
+
+                <div class="bg-[#0b0f19] border border-slate-800 rounded-2xl overflow-hidden shadow-2xl">
+                    <div
+                        class="bg-slate-950 border-b border-slate-800/80 px-5 py-3.5 flex items-center justify-between">
+                        <div class="flex items-center space-x-2">
+                            <span class="w-3 h-3 rounded-full bg-rose-500/80"></span>
+                            <span class="w-3 h-3 rounded-full bg-amber-500/80"></span>
+                            <span class="w-3 h-3 rounded-full bg-emerald-500/80"></span>
+                            <span
+                                class="text-xs font-semibold text-slate-400 code-font pl-2">v8-saas-distributed-core.log</span>
+                        </div>
+                        <button onclick="clearLogs()"
+                            class="text-xs text-slate-500 hover:text-slate-300 transition flex items-center space-x-1 font-medium">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24"
+                                stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                    d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862" />
+                            </svg>
+                            <span>Konsolu Temizle</span>
+                        </button>
+                    </div>
+                    <div class="p-5 bg-slate-950 min-h-64 max-h-96 overflow-y-auto code-font text-xs space-y-2"
+                        id="terminal-logs">
+                        <div class="text-slate-500">// V8 Dağıtık B2C SaaS simülasyon konsoluna hoş geldiniz.</div>
+                        <div class="text-slate-500">// Sunucu kümesi ve otonom gölge engel koruyucu hatasız başlatıldı.
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- TAB: SAAS MÜŞTERİ HAVUZU -->
+            <div id="tab-tenants" class="space-y-6 hidden">
+                <div class="bg-[#0b0f19] border border-slate-800/80 rounded-2xl p-6 shadow-xl">
+                    <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-6">
+                        <div>
+                            <h2 class="text-lg font-bold text-slate-100">B2C SaaS Aktif Müşteri (Tenant) Portföyü</h2>
+                            <p class="text-xs text-slate-400">Mobil uygulamalar üzerinden tescil edilip, arka planda
+                                adil sıra ile taranan eşzamanlı aktif vize başvuru sahipleri veritabanı.</p>
+                        </div>
+                        <div
+                            class="flex items-center space-x-3 bg-teal-500/10 border border-teal-500/30 px-4 py-2.5 rounded-xl text-xs text-teal-400">
+                            <span class="relative flex h-2 w-2">
+                                <span
+                                    class="animate-ping absolute inline-flex h-full w-full rounded-full bg-teal-400 opacity-75"></span>
+                                <span class="relative inline-flex rounded-full h-2 w-2 bg-teal-500"></span>
+                            </span>
+                            <span class="font-bold">Mobil App Senkronizasyonu Aktif</span>
+                        </div>
+                    </div>
+                    <div class="overflow-x-auto rounded-xl border border-slate-800">
+                        <table class="w-full text-left text-xs">
+                            <thead
+                                class="bg-slate-950 text-slate-400 uppercase tracking-wider text-[10px] border-b border-slate-800">
+                                <tr>
+                                    <th class="px-6 py-4">Abone Bilgisi</th>
+                                    <th class="px-6 py-4">Hedef Gateway / Kanal</th>
+                                    <th class="px-6 py-4">Proxy Ataması</th>
+                                    <th class="px-6 py-4">Durum Derecesi</th>
+                                    <th class="px-6 py-4">Gaussian Delay</th>
+                                    <th class="px-6 py-4 text-right">İşlemler</th>
+                                </tr>
+                            </thead>
+                            <tbody class="divide-y divide-slate-800/60" id="tenant-table-body">
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+            <div id="tab-settings" class="space-y-6 hidden">
+                <div class="bg-[#0b0f19] border border-slate-800 rounded-2xl p-6 shadow-xl">
+                    <h2 class="text-lg font-bold text-slate-100 mb-1">V8 Dağıtık SaaS Yapılandırma Parametreleri</h2>
+                    <p class="text-xs text-slate-400 mb-6">Sistem genelindeki adil dağıtım limitlerini, döner fintech
+                        kart havuzlarını ve gölge engel eşiklerini ayarlayın.</p>
+
+                    <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                        <div class="space-y-5">
+                            <div>
+                                <h3 class="text-sm font-bold text-indigo-400 mb-3">1. Multi-Tenant Adil Dağıtım Eşikleri
+                                </h3>
+                                <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                                    <div>
+                                        <label class="block text-xs font-semibold text-slate-400 mb-1.5">Maksimum
+                                            Concurrency (Her Node İçin)</label>
+                                        <input type="number" id="set-concurrency" value="120"
+                                            class="w-full bg-slate-950 border border-slate-800 rounded-xl px-3.5 py-2.5 text-sm text-slate-200 focus:outline-none focus:border-indigo-500 transition">
+                                    </div>
+                                    <div>
+                                        <label class="block text-xs font-semibold text-slate-400 mb-1.5">Gaussian Sapma
+                                            Aralığı (Saniye)</label>
+                                        <input type="text" id="set-gaussian" value="1.5"
+                                            class="w-full bg-slate-950 border border-slate-800 rounded-xl px-3.5 py-2.5 text-sm text-slate-200 focus:outline-none focus:border-indigo-500 transition">
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div>
+                                <h3 class="text-sm font-bold text-indigo-400 mb-3">2. Catch-All Domain ve DNS Havuzu
+                                    (Wildcard Koruması)</h3>
+                                <div class="space-y-3">
+                                    <div>
+                                        <label class="block text-xs font-semibold text-slate-400 mb-1.5">Kullanılan Alan
+                                            Adı Havuzu (Satır Başına Bir Adet)</label>
+                                        <textarea rows="4"
+                                            class="w-full bg-slate-950 border border-slate-800 rounded-xl p-3 text-xs text-slate-300 font-mono focus:outline-none focus:border-indigo-500 transition">visaregister-now.net
+app-secure-visas.com
+register-vfs-portal.org
+global-visas-system.net</textarea>
+                                        <span class="text-[10px] text-slate-500 block mt-1">Sistem, e-posta
+                                            aktivasyonunu tek bir domaine yığıp engellenmemek için bu alan adları
+                                            arasında rastgele rotasyon yapar.</span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="space-y-5">
+                            <div>
+                                <h3 class="text-sm font-bold text-indigo-400 mb-3">3. Çoklu-BIN Sanal Kart Havuz
+                                    Dağıtımı</h3>
+                                <div class="space-y-3">
+                                    <div class="bg-slate-950 p-4 rounded-xl border border-slate-900 space-y-3">
+                                        <div class="flex items-center justify-between text-xs">
+                                            <span class="text-slate-400">1. Sağlayıcı (Sipay VISA):</span>
+                                            <span class="text-indigo-400 font-mono font-semibold">411171 (Aktif)</span>
+                                        </div>
+                                        <div class="flex items-center justify-between text-xs">
+                                            <span class="text-slate-400">2. Sağlayıcı (Param TROY):</span>
+                                            <span class="text-indigo-400 font-mono font-semibold">542839 (Aktif)</span>
+                                        </div>
+                                        <div class="flex items-center justify-between text-xs">
+                                            <span class="text-slate-400">3. Sağlayıcı (Papara Mastercard):</span>
+                                            <span class="text-indigo-400 font-mono font-semibold">543771 (Aktif)</span>
+                                        </div>
+                                    </div>
+                                    <span class="text-[10px] text-slate-500 block">Sistem, banka veya vize aracı
+                                        kurumlarında BIN blokajına takılmamak için her rezervasyonda kart sağlayıcısını
+                                        otomatik değiştirir.</span>
+                                </div>
+                            </div>
+
+                            <div>
+                                <h3 class="text-sm font-bold text-indigo-400 mb-3">4. Gelişmiş API Altyapısı</h3>
+                                <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                                    <div>
+                                        <label class="block text-xs font-semibold text-slate-400 mb-1.5">CapSolver API
+                                            Key (Turnstile/hCaptcha)</label>
+                                        <input type="password" value="YOUR_CAPSOLVER_API_KEY"
+                                            class="w-full bg-slate-950 border border-slate-800 rounded-xl px-3.5 py-2.5 text-sm text-slate-200 focus:outline-none focus:border-indigo-500 transition">
+                                    </div>
+                                    <div>
+                                        <label class="block text-xs font-semibold text-slate-400 mb-1.5">Gemini AI Key
+                                            (Offline Auto-Healing)</label>
+                                        <input type="password" value="YOUR_GEMINI_API_KEY"
+                                            class="w-full bg-slate-950 border border-slate-800 rounded-xl px-3.5 py-2.5 text-sm text-slate-200 focus:outline-none focus:border-indigo-500 transition">
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="mt-8 border-t border-slate-800/80 pt-5 flex justify-end">
+                        <button onclick="saveSaaSSettings()"
+                            class="bg-emerald-600 hover:bg-emerald-500 text-slate-950 font-bold px-6 py-3 rounded-xl transition text-sm shadow-lg shadow-emerald-500/10">
+                            SaaS Parametrelerini Kaydet ve Canlıda Güncelle
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- TAB: N8N DAĞITIK AKIŞLAR (GÜNCELLENMİŞ) -->
+            <div id="tab-n8n" class="space-y-6 hidden">
+                <div class="bg-[#0b0f19] border border-slate-800 rounded-2xl p-6 shadow-xl">
+                    <h2 class="text-lg font-bold text-slate-100 mb-1">n8n Enterprise Dağıtık Akışları</h2>
+                    <p class="text-xs text-slate-400 mb-6">Playwright otonom botları ile SMS ağ geçitleri, OpenAI AI log
+                        analizörleri ve anlık push bildirimleri arasındaki veri köprülerini koordine edin.</p>
+
+                    <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                        <div
+                            class="bg-slate-950 p-6 rounded-2xl border border-slate-800/60 flex flex-col justify-between hover:border-indigo-500/30 transition">
+                            <div>
+                                <div class="flex items-center justify-between mb-3.5">
+                                    <span
+                                        class="text-xs bg-indigo-500/10 text-indigo-400 border border-indigo-500/20 px-2.5 py-1 rounded-lg font-bold">Fiziksel
+                                        SIM Box Entegrasyonu</span>
+                                    <span class="text-xs text-slate-500 font-mono">Gecikme &lt; 1.0sn</span>
+                                </div>
+                                <h3 class="text-sm font-bold text-slate-200 mb-2">Android SIM Box & SMS Webhook Akışı
+                                </h3>
+                                <p class="text-xs text-slate-400 leading-relaxed mb-4">Sanal numaraların vize
+                                    merkezlerince tamamen engellendiği durumlarda fiziksel SIM havuzlarını devreye alır.
+                                    n8n Regex ve HTTP düğümü ile 3D onay şifresini yakalar ve anlık olarak Redis
+                                    veritabanındaki Job ID'sine yazar.</p>
+                            </div>
+                            <div
+                                class="bg-[#0b0f19] p-3 rounded-lg border border-slate-800 font-mono text-[10px] text-slate-400 mb-4">
+                                <span class="text-indigo-400">Android HTTP Trigger</span> -> <span
+                                    class="text-slate-200">n8n Filter [0-9]{6}</span> -> <span
+                                    class="text-emerald-400">Redis Dynamic Key SET</span>
+                            </div>
+                            <button onclick="simulateN8nTrigger('SMS')"
+                                class="bg-indigo-600 hover:bg-indigo-500 text-slate-100 text-xs font-bold py-2.5 px-4 rounded-xl transition duration-200 shadow-md">
+                                SIM Akışını Test Et (Yapay SMS Gönder)
+                            </button>
+                        </div>
+
+                        <div
+                            class="bg-slate-950 p-6 rounded-2xl border border-slate-800/60 flex flex-col justify-between hover:border-indigo-500/30 transition">
+                            <div>
+                                <div class="flex items-center justify-between mb-3.5">
+                                    <span
+                                        class="text-xs bg-amber-500/10 text-amber-400 border border-amber-500/20 px-2.5 py-1 rounded-lg font-bold">Yapay
+                                        Zeka Raporlama</span>
+                                    <span class="text-xs text-slate-500 font-mono">OpenAI / Gemini</span>
+                                </div>
+                                <h3 class="text-sm font-bold text-slate-200 mb-2">Yapay Zeka Destekli Log Analizi &
+                                    Raporlayıcı</h3>
+                                <p class="text-xs text-slate-400 leading-relaxed mb-4">Botlar herhangi bir hata veya
+                                    selector kırılması aldığında, S3'e yüklenen ekran görüntüsünü ve hata logunu
+                                    OpenAI/Gemini düğümüne gönderir. Yapay zeka, arayüz değişimini algılarsa direkt
+                                    geliştiriciye kod yamasını (hotfix) hazırlar.</p>
+                            </div>
+                            <div
+                                class="bg-[#0b0f19] p-3 rounded-lg border border-slate-800 font-mono text-[10px] text-slate-400 mb-4">
+                                <span class="text-amber-400">Error Event API</span> -> <span
+                                    class="text-slate-200">OpenAI Vision Agent</span> -> <span
+                                    class="text-emerald-400">Auto-Update selectors.json</span>
+                            </div>
+                            <button onclick="simulateN8nTrigger('AI')"
+                                class="bg-indigo-600 hover:bg-indigo-500 text-slate-100 text-xs font-bold py-2.5 px-4 rounded-xl transition duration-200 shadow-md">
+                                AI Log Analizini Çalıştır (Hata Simüle Et)
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- TAB: KVKK / GDPR UYUMLULUK -->
+            <div id="tab-compliance" class="space-y-6 hidden">
+                <div class="bg-[#0b0f19] border border-slate-800/80 rounded-2xl p-6 shadow-xl">
+                    <h2 class="text-lg font-bold text-slate-100 mb-1">KVKK / GDPR Veri Güvenliği ve Sıfır Retention
+                        Katmanı</h2>
+                    <p class="text-xs text-slate-400 mb-6">B2C modelinde son kullanıcı verilerinin hukuken korunması,
+                        veritabanında PII (Kişisel Veri) tutulmaması için geliştirilen otonom imha aracı.</p>
+
+                    <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                        <div class="lg:col-span-2 space-y-4">
+                            <div
+                                class="bg-slate-950 p-5 rounded-2xl border border-slate-800/80 space-y-3.5 text-xs text-slate-300 leading-relaxed">
+                                <h3 class="text-sm font-bold text-rose-400 flex items-center gap-1.5">
+                                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none"
+                                        viewBox="0 0 24 24" stroke="currentColor">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                            d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+                                    </svg>
+                                    Hassas Veri (PII) İmha Politikası
+                                </h3>
+                                <p>Otomasyon sistemimiz üzerinden sorgulama yapan her bir müşterinin <strong>Pasaport
+                                        Numarası, TC Kimlik Numarası, Doğum Tarihi ve Kimlik Görselleri</strong> vize
+                                    rezervasyonu başarıyla rezerve edildiği veya iptal edildiği anda veritabanından
+                                    kalıcı olarak ve geri dönülemez şekilde imha edilmek zorundadır (TCK Madde 135-136).
+                                </p>
+                                <p>Sistem, Playwright botlarının başarılı PDF çıktısını MinIO S3 nesne deposuna
+                                    gönderdiği saniyede PostgreSQL üzerindeki veritabanı kolonu otonom olarak sıfırlar.
+                                </p>
+                                <div class="border-t border-slate-800 pt-3 flex flex-wrap gap-2 text-[10px]">
+                                    <span
+                                        class="bg-slate-900 border border-slate-800 px-2.5 py-1 rounded font-mono font-semibold">AES-256-GCM
+                                        (Encrypted At Rest)</span>
+                                    <span
+                                        class="bg-slate-900 border border-slate-800 px-2.5 py-1 rounded font-mono font-semibold">Automatic
+                                        Shredding (Otonom İmha)</span>
+                                    <span
+                                        class="bg-slate-900 border border-slate-800 px-2.5 py-1 rounded font-mono font-semibold">Zero-Retention
+                                        Mode</span>
+                                </div>
+                            </div>
+
+                            <div class="bg-slate-950 p-5 rounded-2xl border border-slate-800/80 space-y-3">
+                                <h4 class="text-xs font-bold text-slate-400 tracking-wider uppercase">Canlı AES-256-GCM
+                                    Veri Şifreleme Simülatörü</h4>
+                                <div class="space-y-2">
+                                    <input type="text" id="plain-text-input" oninput="simulateEncryption()"
+                                        value="Mehmet Yılmaz - Pasaport: U1283904 - TC: 19028394102"
+                                        class="w-full bg-[#0b0f19] border border-slate-800 rounded-xl px-3 py-2 text-xs text-slate-200 focus:outline-none focus:border-indigo-500">
+                                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-2 text-[10px] font-mono">
+                                        <div class="bg-[#0b0f19] p-3 rounded border border-slate-900">
+                                            <div class="text-slate-500 mb-1">// Encrypted Hex String</div>
+                                            <div class="text-indigo-400 break-all" id="encrypt-hex-output">
+                                                7a8f902ab3c4d5e6f1a2b3c4d5e6f7a8...</div>
+                                        </div>
+                                        <div class="bg-[#0b0f19] p-3 rounded border border-slate-900">
+                                            <div class="text-slate-500 mb-1">// AES-GCM Auth Tag</div>
+                                            <div class="text-teal-400 break-all" id="encrypt-tag-output">
+                                                f3d2a1c0e9b8a7f6</div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div
+                            class="bg-[#0b0f19] border-2 border-rose-500/40 rounded-2xl p-6 shadow-xl flex flex-col justify-between hover:border-rose-500 transition duration-300">
+                            <div>
+                                <div class="flex items-center space-x-2 text-rose-500 mb-4">
+                                    <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none"
+                                        viewBox="0 0 24 24" stroke="currentColor">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                            d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                                    </svg>
+                                    <h3 class="text-sm font-bold tracking-tight">Acil Durum PII Temizlik Kilidi</h3>
+                                </div>
+                                <p class="text-xs text-slate-400 leading-relaxed mb-6">Olası bir resmi denetleme, siber
+                                    saldırı veya sunucu sızıntısı şüphesi durumunda aşağıdaki butona basmak
+                                    veritabanındaki tüm kimlik, pasaport, adres, isim-soyisim ve e-posta kayıtlarını
+                                    <strong>geri dönülemez şekilde imha eder</strong> ve her şeyi dummy/maskelenmiş
+                                    verilere dönüştürür.
+                                </p>
+                            </div>
+                            <button onclick="triggerEmergencyRetentionPurge()"
+                                class="w-full bg-rose-600 hover:bg-rose-500 text-slate-950 font-black py-3 px-4 rounded-xl transition duration-200 text-sm shadow-lg shadow-rose-600/10">
+                                TÜM VERİTABANINI ŞİMDİ SIFIRLA (SHRED)
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div id="tab-debugger" class="space-y-6 hidden">
+                <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                    <div
+                        class="lg:col-span-1 bg-[#0b0f19] border border-slate-800 rounded-2xl p-6 shadow-xl flex flex-col justify-between">
+                        <div>
+                            <h2 class="text-sm font-bold text-slate-100 mb-3 flex items-center gap-2">
+                                <span class="w-2.5 h-2.5 bg-rose-500 rounded-full animate-pulse"></span>
+                                Geliştirici İnteraktif Konsol Modu
+                            </h2>
+                            <p class="text-xs text-slate-400 mb-5 leading-relaxed">Cluster veya polling botlarına anlık
+                                simüle edilmiş API komutları göndererek altyapıyı manuel test edin.</p>
+
+                            <div
+                                class="space-y-2 text-xs text-slate-400 mb-6 bg-slate-950 p-4 rounded-xl border border-slate-900">
+                                <div class="font-semibold text-slate-300 mb-1">Geçerli Komutlar:</div>
+                                <div><code class="text-indigo-400 font-mono font-bold">/ip-rotate</code> - Proxy ağ
+                                    geçidini döndürür</div>
+                                <div><code class="text-indigo-400 font-mono font-bold">/check-nodes</code> - Cluster
+                                    node sağlığını sorgular</div>
+                                <div><code class="text-indigo-400 font-mono font-bold">/selfie-inject</code> - Sanal
+                                    kamera akışını tetikler</div>
+                                <div><code class="text-indigo-400 font-mono font-bold">/healing-run</code> - Arka plan
+                                    AI yamasını çalıştır</div>
+                            </div>
+                        </div>
+
+                        <div>
+                            <div class="flex items-center bg-slate-950 rounded-xl border border-slate-800 px-3 py-2.5">
+                                <span class="text-slate-500 mr-2 font-mono text-sm">></span>
+                                <input type="text" id="debugger-input" onkeydown="handleDebuggerInput(event)"
+                                    placeholder="Komut yazın ve enter'a basın..."
+                                    class="bg-transparent text-xs text-emerald-400 font-mono w-full focus:outline-none">
+                            </div>
+                        </div>
+                    </div>
+
+                    <div
+                        class="lg:col-span-2 bg-[#0b0f19] border border-slate-800 rounded-2xl p-6 shadow-xl flex flex-col justify-between">
+                        <div>
+                            <h2 class="text-sm font-bold text-slate-100 mb-3">Canlı Debug Çıktı Akışı</h2>
+                            <div class="bg-slate-950 p-4 rounded-xl border border-slate-900 min-h-60 max-h-80 overflow-y-auto font-mono text-[11px] space-y-2.5 text-slate-300"
+                                id="debug-output-box">
+                                <div class="text-slate-500">// Debugger konsolu hazır. Komutlarınızı bekliyor...</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+        </main>
+    </div>
+
+    <script>
+        let currentTab = 'dashboard';
+        let simulationInterval = null;
+        let isPollingSimulating = false;
+        let totalPolls = 892105;
+        let subscriberCount = 1420;
+        let slotCount = 3892;
+
+        let saasConfig = {
+            gaussianDelay: 1.5,
+            concurrency: 120
+        };
+
+        // Tenant (Müşteri) Veritabanı
+        let tenantList = [
+            { id: 1, name: "Kullanıcı #8210 (Almanya Vizesi)", gateway: "iDATA Ön Kayıt", proxy: "lum-session-1982", status: "Sorguluyor", delay: "10.4sn", colorClass: "text-emerald-400" },
+            { id: 2, name: "Kullanıcı #8211 (Fransa Vizesi)", gateway: "TLSContact Fransa", proxy: "lum-session-1983", status: "Kuyrukta", delay: "9.8sn", colorClass: "text-slate-400" },
+            { id: 3, name: "Kullanıcı #8212 (İspanya Vizesi)", gateway: "BLS International", proxy: "lum-session-1984", status: "Kuyrukta", delay: "11.2sn", colorClass: "text-slate-400" },
+            { id: 4, name: "Kullanıcı #8213 (Polonya Vizesi)", gateway: "VFS Global Polonya", proxy: "lum-session-1985", status: "Aktif", delay: "8.5sn", colorClass: "text-emerald-400" },
+            { id: 5, name: "Kullanıcı #8214 (İtalya Vizesi)", gateway: "iDATA İtalya", proxy: "lum-session-1986", status: "Kuyrukta", delay: "12.1sn", colorClass: "text-slate-400" }
+        ];
+
+        // Initialize Hetzner Cluster Node Map
+        function initClusterNodes() {
+            const grid = document.getElementById('cluster-node-grid');
+            grid.innerHTML = '';
+            for (let i = 1; i <= 46; i++) {
+                const node = document.createElement('div');
+                node.id = `cluster-node-${i}`;
+                node.className = "w-full aspect-square rounded bg-emerald-500 border border-emerald-600/30 hover:scale-115 transition duration-150 cursor-pointer shadow";
+                node.setAttribute('title', `Node #${i} - Durum: Boşta/Taramada (CPU: %2)`);
+                node.setAttribute('onclick', `showNodeDetail(${i})`);
+                grid.appendChild(node);
+            }
+        }
+
+        function showNodeDetail(nodeId) {
+            const node = document.getElementById(`cluster-node-${nodeId}`);
+            let status = "Aktif Polling";
+            if (node.className.includes('bg-blue-500')) status = "CAPTCHA Çözülüyor";
+            else if (node.className.includes('bg-amber-500')) status = "Yoğun/İşlemde";
+
+            addLog(`[NODE #${nodeId}] Durum: ${status} | CPU: %${Math.floor(Math.random() * 25) + 5} | Gecikme: ${Math.floor(Math.random() * 150) + 40}ms`, 'system');
+        }
+
+        // Tab Management
+        function switchTab(tabId) {
+            document.getElementById('tab-dashboard').classList.add('hidden');
+            document.getElementById('tab-tenants').classList.add('hidden');
+            document.getElementById('tab-settings').classList.add('hidden');
+            document.getElementById('tab-n8n').classList.add('hidden');
+            document.getElementById('tab-compliance').classList.add('hidden');
+            document.getElementById('tab-debugger').classList.add('hidden');
+
+            const buttons = document.querySelectorAll('.nav-btn');
+            buttons.forEach(btn => {
+                btn.className = "nav-btn w-full flex items-center space-x-3 px-4 py-3 rounded-xl text-sm font-semibold text-slate-400 hover:bg-slate-800/40 hover:text-slate-200 transition";
+            });
+
+            document.getElementById(`tab-${tabId}`).classList.remove('hidden');
+            const activeBtn = document.getElementById(`btn-${tabId}`);
+            activeBtn.className = "nav-btn w-full flex items-center space-x-3 px-4 py-3 rounded-xl text-sm font-semibold transition bg-emerald-500/10 text-emerald-400 border-l-4 border-emerald-500 shadow-md";
+
+            currentTab = tabId;
+
+            if (tabId === 'tenants') {
+                renderTenantTable();
+            }
+        }
+
+        // Live Log terminal utility
+        function addLog(message, style = 'info') {
+            const terminal = document.getElementById('terminal-logs');
+            const row = document.createElement('div');
+            const now = new Date();
+            const timeStr = `[${now.toTimeString().split(' ')[0]}]`;
+
+            let color = 'text-slate-300';
+            if (style === 'success') color = 'text-emerald-400 font-bold';
+            if (style === 'warn') color = 'text-amber-400 font-medium';
+            if (style === 'error') color = 'text-red-400 font-black';
+            if (style === 'system') color = 'text-indigo-400';
+            if (style === 'gray') color = 'text-slate-500';
+
+            row.innerHTML = `<span class="text-slate-600">${timeStr}</span> <span class="${color}">${message}</span>`;
+            terminal.appendChild(row);
+            terminal.scrollTop = terminal.scrollHeight;
+        }
+
+        function clearLogs() {
+            document.getElementById('terminal-logs').innerHTML = `<div class="text-slate-500">// Konsol temizlendi. Yeni otonom SaaS logları bekleniyor...</div>`;
+        }
+
+        // SaaS Multi-User Simulated Polling Loop
+        function startSaaSSimulation() {
+            if (isPollingSimulating) return;
+            isPollingSimulating = true;
+            document.getElementById('btn-start-sim').classList.add('hidden');
+            document.getElementById('btn-stop-sim').classList.remove('hidden');
+
+            addLog('🚀 B2C SaaS Dağıtık Polling Motoru Tetiklendi...', 'system');
+            addLog('[TRAFFIC SHAPER] Gaussian Dağılım modülü aktif. Sapma aralığı: ±' + saasConfig.gaussianDelay + 'sn', 'system');
+
+            let runCount = 0;
+            const progress = document.getElementById('pipeline-progress-bar');
+            const actionLed = document.getElementById('current-action-led');
+            const actionLbl = document.getElementById('current-action-lbl');
+
+            simulationInterval = setInterval(() => {
+                runCount++;
+                totalPolls += Math.floor(Math.random() * 5) + 2;
+                document.getElementById('metric-polling').innerText = totalPolls.toLocaleString();
+
+                // Cluster Nodes Randomizer
+                for (let idx = 1; idx <= 46; idx++) {
+                    const rnd = Math.random();
+                    const el = document.getElementById(`cluster-node-${idx}`);
+                    if (rnd > 0.8) {
+                        el.className = "w-full aspect-square rounded bg-blue-500 border border-blue-600/30 transition duration-150 cursor-pointer shadow";
+                    } else if (rnd > 0.65) {
+                        el.className = "w-full aspect-square rounded bg-amber-500 border border-amber-600/30 transition duration-150 cursor-pointer shadow animate-pulse";
+                    } else {
+                        el.className = "w-full aspect-square rounded bg-emerald-500 border border-emerald-600/30 transition duration-150 cursor-pointer shadow";
+                    }
+                }
+
+                // Rotate pipeline steps visually
+                if (runCount % 3 === 1) {
+                    progress.style.width = '33%';
+                    actionLed.className = "w-2.5 h-2.5 rounded-full bg-indigo-500 animate-ping";
+                    actionLbl.innerText = "Adil Kuyruk alt-kanalları round-robin sırasıyla taranıyor...";
+
+                    document.getElementById('tenant-1-status').className = "text-[10px] bg-emerald-500/15 text-emerald-400 border border-emerald-500/20 px-2.5 py-0.5 rounded-full font-semibold";
+                    document.getElementById('tenant-1-status').innerText = "Sorguluyor";
+                    document.getElementById('tenant-2-status').className = "text-[10px] bg-slate-800 text-slate-400 border border-slate-700/60 px-2.5 py-0.5 rounded-full font-semibold";
+                    document.getElementById('tenant-2-status').innerText = "Kuyrukta";
+
+                    addLog('[SAAS] Kullanıcı #8210 (iDATA Almanya) adil havuz tüneli kuruldu. Gaussian zamanlama uygulandı.', 'info');
+                }
+                else if (runCount % 3 === 2) {
+                    progress.style.width = '66%';
+                    actionLed.className = "w-2.5 h-2.5 rounded-full bg-blue-500 animate-ping";
+                    actionLbl.innerText = "Turnstile ve Akamai korumaları bulut tarayıcı havuzunda aşılıyor...";
+
+                    document.getElementById('tenant-1-status').className = "text-[10px] bg-slate-800 text-slate-400 border border-slate-700/60 px-2.5 py-0.5 rounded-full font-semibold";
+                    document.getElementById('tenant-1-status').innerText = "Kuyrukta";
+                    document.getElementById('tenant-2-status').className = "text-[10px] bg-emerald-500/15 text-emerald-400 border border-emerald-500/20 px-2.5 py-0.5 rounded-full font-semibold";
+                    document.getElementById('tenant-2-status').innerText = "Sorguluyor";
+
+                    addLog('[WAF BYPASS] Kullanıcı #8211 (TLSContact) Akamai JA4 parmak izi el sıkışması taklit edildi.', 'info');
+                }
+                else {
+                    progress.style.width = '100%';
+                    actionLed.className = "w-2.5 h-2.5 rounded-full bg-emerald-500";
+                    actionLbl.innerText = "Oturum bütünlüğü aktif. Bağımsız kontrol grubu devrede.";
+                    addLog('[VALIDATOR] Eşzamanlı kontrol grubu çapraz doğrulama yaptı: Gölge engel yok.', 'success');
+                }
+
+                if (runCount % 5 === 0) {
+                    slotCount++;
+                    document.getElementById('metric-slots').innerText = slotCount.toLocaleString();
+                    addLog('[!!!] SLOT BULUNDU: Kullanıcı #8211 için Fransa vize kontenjanı yakalandı! %100 otonom ödeme tetikleniyor.', 'success');
+                }
+
+            }, 4000);
+        }
+
+        function stopSaaSSimulation() {
+            clearInterval(simulationInterval);
+            isPollingSimulating = false;
+            document.getElementById('btn-start-sim').classList.remove('hidden');
+            document.getElementById('btn-stop-sim').classList.add('hidden');
+            document.getElementById('pipeline-progress-bar').style.width = '0%';
+            document.getElementById('current-action-led').className = "w-2 h-2 rounded-full bg-slate-500";
+            document.getElementById('current-action-lbl').innerText = "Simülatör durduruldu.";
+            addLog('[SYSTEM] SaaS dağıtık polling motoru güvenli moda alındı.', 'gray');
+            initClusterNodes();
+        }
+
+        // SIMULATION 1: Shadow Ban Rescue
+        function simulateShadowBanRescue() {
+            addLog('[⚠️ GÖLGE ENGEL ALARMI] Tarayıcı havuzunda gizli kısıtlama (Shadow Ban) saptandı!', 'error');
+            document.getElementById('status-ban-ratio').innerText = '%100 Durum Tutarsızlığı!';
+            document.getElementById('status-ban-ratio').className = 'text-rose-500 font-extrabold animate-pulse';
+
+            setTimeout(() => {
+                addLog('[RESCUE ENGINE] Otonom kurtarıcı devrede: Bright Data tünelleri donduruluyor. Oxylabs Mobile ISP katmanına geçiş yapılıyor...', 'system');
+            }, 1500);
+
+            setTimeout(() => {
+                addLog('[SUCCESS] Temiz mobil IP ve parmak izi enjeksiyonu doğrulandı. Gölge engel kırıldı.', 'success');
+                document.getElementById('status-ban-ratio').innerText = '%0 Tutarsızlık (Güvenli)';
+                document.getElementById('status-ban-ratio').className = 'text-emerald-400 font-extrabold';
+            }, 4000);
+        }
+
+        // SIMULATION 2: Offline AI Healing
+        function simulateOfflineHealing() {
+            addLog('[OFFLINE HEALING] Çevrimdışı Yapay Zeka yama döngüsü arka planda başladı...', 'system');
+            addLog('[AI AGENT] Arayüz element ID/Class değişimi saptandı. Gemini 2.5 Flash DOM analizi yürütüyor...', 'info');
+
+            setTimeout(() => {
+                addLog('[AI AGENT] Analiz Başarılı: selectors.json yerel veritabanı 4 yeni CSS selector ile güncellendi.', 'success');
+                addLog('[SUCCESS] Canlı botlar artık LLM API gecikmesine uğramadan doğrudan önbellekten milisaniyeler içinde okuyacak.', 'success');
+            }, 3000);
+        }
+
+        // SIMULATION 3: Biometric Selfie Bypass (New Feature Based on Project Plan)
+        function simulateSelfieBypass() {
+            addLog('[📷 BİYOMETRİK KONTROL] BLS / TLSContact Selfie checkpoint doğrulaması tetiklendi!', 'warn');
+            addLog('[VIRTUAL CAMERA] İşletim sistemi düzeyinde ham video enjeksiyon döngüsü başlatılıyor...', 'system');
+
+            setTimeout(() => {
+                addLog('[VIRTUAL CAMERA] Önceden kaydedilmiş ISO/IEC 30107-3 uyumlu Canlılık Analizi (Liveness Stream) bota basıldı.', 'info');
+            }, 1200);
+
+            setTimeout(() => {
+                addLog('[SUCCESS] Biyometrik selfie checkpoint insan müdahalesi olmadan otonom olarak bypass edildi.', 'success');
+            }, 2800);
+        }
+
+        // SIMULATION 4: Multi-BIN Fintech Card Rotation (New Feature Based on Project Plan)
+        function simulateBinRotation() {
+            addLog('[💳 ÖDEME BASAMAĞI] iDATA koordinasyon bedeli tahsilat geçidi aktif edildi.', 'info');
+            addLog('[CARD ROTATOR] Sert reddedilmeyi (Hard Decline) önlemek için BIN rotasyon havuzu taranıyor...', 'system');
+
+            setTimeout(() => {
+                const providers = ['SIPAY VISA (411171)', 'PAPARA MASTERCARD (543771)', 'PARAM TROY (542839)', 'ININAL VISA (439201)'];
+                const selected = providers[Math.floor(Math.random() * providers.length)];
+                document.getElementById('live-bin-status').innerText = selected;
+                addLog(`[SUCCESS] Card Issuer Rotator yeni sanal kart atadı: ${selected}. Ödeme tamamlandı.`, 'success');
+            }, 1500);
+        }
+
+        // SIMULATION 5: Traffic Shaper Gaussian Distribution (New Feature Based on Project Plan)
+        function simulateTrafficShaper() {
+            addLog('[📊 TRAFFIC SHAPER] Küme genelinde Gaussian Dağılım modülü zorlanıyor.', 'system');
+            addLog('[TRAFFIC SHAPER] İstek frekansları toplu hücum (DDoS) algısını yıkmak için milisaniyelik rastgele sapmalara tabi tutuluyor...', 'info');
+
+            setTimeout(() => {
+                addLog('[SUCCESS] Trafik düzenleme başarılı. Hedef güvenlik duvarları istekleri bağımsız tekil son kullanıcı olarak etiketledi.', 'success');
+            }, 2000);
+        }
+
+        // Simulated n8n Webhook testing
+        function simulateN8nTrigger(type) {
+            if (type === 'SMS') {
+                addLog('[n8n Webhook] Android SIM Box fiziksel hat webhook sinyali yakalandı.', 'system');
+                addLog('[n8n Webhook] Süzülen Veri: "3D Secure şifreniz: 492104. iDATA formuna enjekte ediliyor..."', 'info');
+                addLog('[Redis Client] redis.set("otp:3d:job_8210", "492104") tescillendi.', 'success');
+            } else if (type === 'AI') {
+                addLog('[n8n Webhook] Yapay zeka hata log analizörü düğümü tetiklendi.', 'system');
+                addLog('[n8n AI Engine] DOM analizi: takvim kırılması giderildi, selectors.json güncel duruma çekildi.', 'success');
+            }
+        }
+
+        // Config real-time synchronization
+        function saveSaaSSettings() {
+            const gaussian = document.getElementById('set-gaussian').value;
+            saasConfig.gaussianDelay = parseFloat(gaussian) || 1.5;
+
+            document.getElementById('tenant-1-delay').innerText = `Gecikme: 10.4sn (Gaussian ±${gaussian}s)`;
+            document.getElementById('tenant-2-delay').innerText = `Gecikme: 9.8sn (Gaussian ±${gaussian}s)`;
+            document.getElementById('tenant-3-delay').innerText = `Gecikme: 11.2sn (Gaussian ±${gaussian}s)`;
+
+            addLog('[SYSTEM] SaaS konfigürasyon havuzu güncellendi ve worker container kümesine dağıtıldı.', 'success');
+            switchTab('dashboard');
+        }
+
+        // Advanced Debugger Logic
+        function handleDebuggerInput(event) {
+            if (event.key === 'Enter') {
+                const inputEl = document.getElementById('debugger-input');
+                const command = inputEl.value.trim();
+                if (!command) return;
+
+                const dbBox = document.getElementById('debug-output-box');
+                const timeStr = `[${new Date().toTimeString().split(' ')[0]}]`;
+                dbBox.innerHTML += `<div class="text-indigo-400">${timeStr} guest_dev:~$ ${command}</div>`;
+
+                if (command === '/ip-rotate') {
+                    dbBox.innerHTML += `<div class="text-amber-400">${timeStr} [WARMING] Mobil proxy havuzu manuel döndürülüyor...</div>`;
+                    setTimeout(() => {
+                        dbBox.innerHTML += `<div class="text-emerald-400">${timeStr} [SUCCESS] Oxylabs ISP rotasyonu yapıldı. Tünel portları yenilendi.</div>`;
+                        dbBox.scrollTop = dbBox.scrollHeight;
+                    }, 800);
+                }
+                else if (command === '/check-nodes') {
+                    dbBox.innerHTML += `<div class="text-slate-400">${timeStr} [INFO] Cluster durum bütünlüğü denetleniyor...</div>`;
+                    setTimeout(() => {
+                        dbBox.innerHTML += `<div class="text-emerald-400">${timeStr} [HEALTHY] 46/46 Node aktif. RAM sızıntısı yok, Event Loop kararlı.</div>`;
+                        dbBox.scrollTop = dbBox.scrollHeight;
+                    }, 1200);
+                }
+                else if (command === '/selfie-inject') {
+                    dbBox.innerHTML += `<div class="text-slate-400">${timeStr} [INFO] Sanal kamera enjeksiyon parametresi (/var/lib/visabot/media/liveness_active_stream.y4m) zorlanıyor...</div>`;
+                    setTimeout(() => {
+                        dbBox.innerHTML += `<div class="text-emerald-400">${timeStr} [SUCCESS] OS fake video capture katmanı otonom başarıya ulaştı.</div>`;
+                        dbBox.scrollTop = dbBox.scrollHeight;
+                    }, 1000);
+                }
+                else if (command === '/healing-run') {
+                    dbBox.innerHTML += `<div class="text-amber-400">${timeStr} [AI] Çevrimdışı önbellek motoru tetikleniyor...</div>`;
+                    setTimeout(() => {
+                        dbBox.innerHTML += `<div class="text-emerald-400">${timeStr} [AI_SUCCESS] Yerel selectors.json tablosu güncellendi. Kırık seçici kalmadı.</div>`;
+                        dbBox.scrollTop = dbBox.scrollHeight;
+                    }, 1500);
+                }
+                else {
+                    dbBox.innerHTML += `<div class="text-rose-400">${timeStr} HATA: Bilinmeyen komut. Geçerli komutlar: /ip-rotate, /check-nodes, /selfie-inject, /healing-run</div>`;
+                }
+
+                inputEl.value = '';
+                dbBox.scrollTop = dbBox.scrollHeight;
+            }
+        }
+
+        // Render Tenant Table
+        function renderTenantTable() {
+            const body = document.getElementById('tenant-table-body');
+            body.innerHTML = '';
+            tenantList.forEach(tenant => {
+                const tr = document.createElement('tr');
+                tr.className = "hover:bg-slate-900/40 transition duration-150";
+                tr.innerHTML = `
+                    <td class="px-6 py-4 font-semibold text-slate-200">${tenant.name}</td>
+                    <td class="px-6 py-4 text-slate-400">${tenant.gateway}</td>
+                    <td class="px-6 py-4"><span class="font-mono text-indigo-400 font-medium">${tenant.proxy}</span></td>
+                    <td class="px-6 py-4">
+                        <span class="inline-flex items-center space-x-1.5 ${tenant.colorClass}">
+                            <span class="w-1.5 h-1.5 bg-current rounded-full"></span>
+                            <span class="font-bold text-[11px]">${tenant.status}</span>
+                        </span>
+                    </td>
+                    <td class="px-6 py-4 text-slate-400 font-mono">${tenant.delay}</td>
+                    <td class="px-6 py-4 text-right">
+                        <button onclick="simulateSingleTenantPurge(${tenant.id})" class="text-xs text-rose-400 hover:text-rose-300 font-semibold bg-rose-500/10 hover:bg-rose-500/20 px-3 py-1.5 rounded-lg border border-rose-500/20 transition">KVKK İmha</button>
+                    </td>
+                `;
+                body.appendChild(tr);
+            });
+        }
+
+        // KVKK: Tekil Müşteri PII İmhası
+        function simulateSingleTenantPurge(tenantId) {
+            tenantList = tenantList.filter(t => t.id !== tenantId);
+            renderTenantTable();
+            addLog(`[KVKK] Abone ID #${tenantId} kişisel verileri veritabanından kalıcı olarak silindi ve shredded yapıldı.`, 'success');
+        }
+
+        // KVKK: Acil Durum Toplu Veri İmhası
+        function triggerEmergencyRetentionPurge() {
+            const isConfirmed = confirm("DİKKAT: Veritabanındaki tüm hassas kullanıcı verileri, pasaport bilgileri, log kalıntıları ve kuyruk havuzu geri döndürülemez şekilde silinecek ve maskelenecektir. Onaylıyor musunuz?");
+            if (!isConfirmed) return;
+
+            addLog('[⚠️ EMERGENCY] Acil durum veri imha döngüsü başlatıldı!', 'error');
+            addLog('[⚠️ EMERGENCY] PostgreSQL PII kolonları AES anahtarlarıyla birlikte imha ediliyor...', 'error');
+
+            tenantList = tenantList.map(tenant => {
+                tenant.name = "MASKELENMİŞ KULLANICI (SHREDDED)";
+                tenant.proxy = "PURGED_PORT";
+                tenant.status = "KVKK_DELETED";
+                tenant.delay = "0.0sn";
+                tenant.colorClass = "text-rose-500";
+                return tenant;
+            });
+
+            setTimeout(() => {
+                renderTenantTable();
+                addLog('[SUCCESS] Veritabanı temizlendi. Geri döndürülebilir hiçbir kişisel veri sunucuda bulunmamaktadır (Zero-Retention).', 'success');
+            }, 2000);
+        }
+
+        // KVKK: AES-256-GCM Şifreleme Simülatörü
+        function simulateEncryption() {
+            const val = document.getElementById('plain-text-input').value;
+            const hexOutput = document.getElementById('encrypt-hex-output');
+            const tagOutput = document.getElementById('encrypt-tag-output');
+            if (!val) { hexOutput.innerText = '...'; tagOutput.innerText = '...'; return; }
+            let hash = 0;
+            for (let i = 0; i < val.length; i++) {
+                hash = val.charCodeAt(i) + ((hash << 5) - hash);
+            }
+            const hashHex = Math.abs(hash).toString(16).padEnd(8, 'a');
+            hexOutput.innerText = 'e4a8b23c' + hashHex + 'f7d98c21a00b91e8432a567c90ef123d' + hashHex;
+            tagOutput.innerText = hashHex + '4f9a3c8e';
+        }
+
+        // Init window
+        window.onload = function () {
+            initClusterNodes();
+            simulateEncryption();
+        }
+    </script>
+</body>
+
+</html>
