@@ -16,6 +16,7 @@
 - Updated Next.js API route (`web/src/app/api/run-bot/route.ts`) to resolve to the new bot engine directory path (`../bot`)
 - Updated debug log execution command in `bot/src/vfs-demo-runner.ts` to target `/home/sezin/Documents/vizetest/bot/.chrome-debug-profile`
 - Created root `.gitignore` to prevent tracking of `node_modules` and local CDP debugging profiles
+- Removed redundant `web/pnpm-lock.yaml` and `web/pnpm-workspace.yaml` configurations to keep the monorepo root settings consolidated
 - Created comprehensive `README.md` clearly outlining the architecture and bypass strategies, and marking it as a **⚠️ DISCONTINUED DEMO**
 - Created the GitHub repository `vfs-visa-automation-demo` under user `UmutcanYilmaz` and pushed the initialized code to `main` branch
 - Verified correct installation and Next.js build compilation of workspace packages (`pnpm install` and `pnpm --filter web build` completed successfully)
