@@ -31,3 +31,30 @@
 ### Architectural Decisions
 - Monorepo folder flattening: Flattened workspace structure from nested `apps/` to top-level `web/` and `bot/` packages to simplify imports, CLI scoping, and local configuration.
 - Nested `.git` removal: Cleaned up residual git initializations to allow standard monorepo tracking in the root repository.
+
+## [2026-07-17T14:08:00+03:00] - Security: Hardcoded Credential Removal & Git History Rewrite
+**Author**: Antigravity (Claude Opus 4.6)
+
+### Completed Tasks
+- **Audit**: Searched entire codebase for hardcoded passwords, emails, API keys, secrets, and tokens.
+- **Found 4 leaked credentials**:
+  1. `bot/src/vfs-demo-runner.ts:324` — VFS login email (replaced with `process.env.VFS_EMAIL`)
+  2. `bot/src/vfs-demo-runner.ts:333` — VFS login password (replaced with `process.env.VFS_PASSWORD`)
+  3. `mock/KONTROLPANELISIMULASYONU.html:615` — CapSolver API key (replaced with `YOUR_CAPSOLVER_API_KEY` placeholder)
+  4. `mock/KONTROLPANELISIMULASYONU.html:621` — Gemini AI key (replaced with `YOUR_GEMINI_API_KEY` placeholder)
+- Created `.env.example` template documenting required environment variables.
+- Installed `git-filter-repo` (v2.47.0) via `pipx`.
+- Ran `git filter-repo --replace-text` to scrub all 4 credential literals from every blob in every historical commit.
+- Verified 0 matches across all blobs in all commits post-rewrite.
+- Re-added `origin` remote and force-pushed rewritten history to `https://github.com/UmutcanYilmaz/vfs-visa-automation-demo`.
+
+### Active Workflows
+- Environment: Local pnpm monorepo workspace containing Next.js (`web`) and Playwright (`bot`).
+- Branch: `main` (force-pushed rewritten history to `origin/main`)
+
+### Pending Pipeline
+- None.
+
+### Architectural Decisions
+- Credentials are now sourced exclusively from `process.env` at runtime; `.env` is gitignored.
+- History rewrite was necessary because credentials were baked into the initial commit and all subsequent commits.
