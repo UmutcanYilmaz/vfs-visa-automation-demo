@@ -321,7 +321,7 @@ async function runDemo() {
     const passwordField = await targetPage.$(passwordSelector);
 
     if (emailField) {
-      await humanType(targetPage, emailSelector, 'REDACTED_EMAIL');
+      await humanType(targetPage, emailSelector, process.env.VFS_EMAIL || '');
       console.log('[BOT] E-posta adresi girildi.');
     } else {
       console.log('[BOT] E-posta alanı bulunamadı.');
@@ -330,7 +330,7 @@ async function runDemo() {
     await sleep(randomDelay(500, 1200));
 
     if (passwordField) {
-      await humanType(targetPage, passwordSelector, 'REDACTED_PASSWORD');
+      await humanType(targetPage, passwordSelector, process.env.VFS_PASSWORD || '');
       console.log('[BOT] Şifre girildi.');
     } else {
       console.log('[BOT] Şifre alanı bulunamadı.');
